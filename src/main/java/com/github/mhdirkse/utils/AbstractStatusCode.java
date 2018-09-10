@@ -4,13 +4,20 @@ public interface AbstractStatusCode {
     default String format(String... args) {
         String result = getFormatString();
         for(int i = 0; i < args.length; ++i) {
-            String toReplace = String.format("\\Q{%d}\\E", i+1);
             result = result.replaceAll(
-                    toReplace,
+                    formatter(i+1),
                     args[i]);
         }
         return result;
     }
 
     String getFormatString();
+
+    static String formatter(final int i) {
+        return String.format("\\Q{%d}\\E", i);
+    }
+
+    static String anyFormatter() {
+        return "\\{\\d+\\}";
+    }
 }
