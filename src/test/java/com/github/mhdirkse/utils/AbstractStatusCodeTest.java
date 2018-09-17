@@ -17,8 +17,24 @@ public class AbstractStatusCodeTest {
         StatusCodeStub(final String formatString) {
             this.formatString = formatString;
         }
+
+        @Override
+        public boolean isTestMode() {
+            return true;
+        }
     }
 
+    private enum StatusCodeStubNoTestMode implements AbstractStatusCode {
+        TEST_STATUS_TWO_ARGS("Some status about: {1} and {2}.");
+
+        @Getter(onMethod = @__({@Override}))
+        private String formatString;
+
+        StatusCodeStubNoTestMode(final String formatString) {
+            this.formatString = formatString;
+        }
+    }
+    
     @Test
     public void whenStatusFormatsNoArgumentsAndNoArgumentsGivenThenNoFormattingDone() {
         Assert.assertEquals("Some status zero arguments.", StatusCodeStub.TEST_STATUS_ZERO_ARGS.format());
@@ -33,5 +49,16 @@ public class AbstractStatusCodeTest {
     public void whenStatusFormatsTwoArgumentsAndTwoArgumentsGivenThenFormatApplied() {
         Assert.assertEquals("Some status about: one and two.",
                 StatusCodeStub.TEST_STATUS_TWO_ARGS.format("one", "two"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void whenMissingFormatArgumentsThenError() {
+        StatusCodeStub.TEST_STATUS_TWO_ARGS.format("one");
+    }
+
+    @Test
+    public void whenMissingFormatArgumentsOutsideTestModeThenNoError() {
+        Assert.assertEquals("Some status about: one and {2}.", 
+                StatusCodeStubNoTestMode.TEST_STATUS_TWO_ARGS.format("one"));
     }
 }

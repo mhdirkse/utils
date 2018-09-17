@@ -1,12 +1,15 @@
 package com.github.mhdirkse.utils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Interface that supports formatting messages from enum values. To
  * use this class, derive an enum from this interface. The enum
  * will inherit the format method, allowing it to format a message
  * that is specific for the enum value. This is useful for error handling.
  * The system under test produces enum values, which are easier to check
- * then formatted error messages. Formatting the messages for the user
+ * than formatted error messages. Formatting the messages for the user
  * is done in the enum type.
  * <p>
  * Typically, the enum type has a constructor that takes the format string. The enum type then
@@ -26,6 +29,13 @@ public interface AbstractStatusCode {
             result = result.replaceAll(
                     formatter(i+1),
                     args[i]);
+        }
+        if(isTestMode()) {
+            Pattern p = Pattern.compile(anyFormatter());
+            Matcher m = p.matcher(result);
+            if(m.find()) {
+                throw new IllegalArgumentException("There were missing format parameters");
+            }
         }
         return result;
     }
@@ -49,5 +59,15 @@ public interface AbstractStatusCode {
      */
     static String anyFormatter() {
         return "\\{\\d+\\}";
+    }
+
+    /**
+     * Indicates whether calls to format should test the result. If true,
+     * then an exception is thrown if the format string still contains
+     * formatters after format parameter substitution. Default behaviour
+     * is to return false.
+     */
+    default boolean isTestMode() {
+        return false;
     }
 }
